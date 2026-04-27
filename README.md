@@ -1,18 +1,18 @@
-# SQL MCP Server
+﻿# SQL MCP Server
 
-A [Model Context Protocol (MCP)](https://modelcontextprotocol.io) server that gives AI agents structured, read-only access to a SQL Server database. Built on .NET 8 using the `stdio` transport, it is compatible with any MCP-capable client � Claude Desktop, GitHub Copilot Agent Mode, the MCP Inspector, or a custom host.
+A [Model Context Protocol (MCP)](https://modelcontextprotocol.io) server that gives AI agents structured, read-only access to a SQL Server database. Built on .NET 8 using the `stdio` transport, it is compatible with any MCP-capable client — Claude Desktop, GitHub Copilot Agent Mode, the MCP Inspector, or a custom host.
 
 ---
 
 ## Features
 
 - **15 tools** covering discovery, schema inspection, code search, and safe data sampling
-- **Multi-catalog support** � every tool accepts an optional `catalog` parameter to query any accessible database without reconfiguring
-- **Bounded responses** � list tools cap at a configurable row limit with total-count notices; definition tools truncate at a configurable character limit
-- **Keyword context extraction** � definition and trigger tools accept a `filter` parameter that returns only the �N lines surrounding each match instead of the full body
-- **Read-only enforcement** � `run_query` rejects any statement that does not start with `SELECT`
-- **Structured error handling** � SQL exceptions are caught and returned as clear, agent-readable messages including SQL error number and state
-- **Discoverability flags** � `--info` and `--list-tools` print the server manifest without starting the MCP host
+- **Multi-catalog support** — every tool accepts an optional `catalog` parameter to query any accessible database without reconfiguring
+- **Bounded responses** — list tools cap at a configurable row limit with total-count notices; definition tools truncate at a configurable character limit
+- **Keyword context extraction** — definition and trigger tools accept a `filter` parameter that returns only the ±N lines surrounding each match instead of the full body
+- **Read-only enforcement** — `run_query` rejects any statement that does not start with `SELECT`
+- **Structured error handling** — SQL exceptions are caught and returned as clear, agent-readable messages including SQL error number and state
+- **Discoverability flags** — `--info` and `--list-tools` print the server manifest without starting the MCP host
 
 ---
 
@@ -70,7 +70,7 @@ dotnet run -- --list-tools
 
 ## Connecting to an MCP Client
 
-The server communicates over **stdio** (standard input/output). It cannot be tested by typing into a terminal directly � it requires an MCP client.
+The server communicates over **stdio** (standard input/output). It cannot be tested by typing into a terminal directly — it requires an MCP client.
 
 ### Claude Desktop
 
@@ -91,7 +91,7 @@ Restart Claude Desktop. The tools will appear automatically in the tool panel.
 
 ### GitHub Copilot (VS Code Agent Mode)
 
-Add to VS Code `settings.json` (`Ctrl+Shift+P` ? *Open User Settings JSON*):
+Add to VS Code `settings.json` (`Ctrl+Shift+P` → *Open User Settings JSON*):
 
 ```json
 "mcp": {
@@ -155,7 +155,7 @@ All values are in the `ServerSettings` section of `appsettings.json`. Defaults a
 | Tool | Description |
 |---|---|
 | `get_table_schema` | Returns all columns for a table: name, data type, max length, and nullability. |
-| `get_table_dependencies` | Returns all foreign key relationships for a table � both as parent and child. |
+| `get_table_dependencies` | Returns all foreign key relationships for a table — both as parent and child. |
 | `search_columns` | Finds all tables containing a column matching a name or partial name. |
 | `get_indexes` | Returns all indexes on a table with key columns, uniqueness, and clustering type. |
 | `get_triggers` | Returns all triggers on a table with their full T-SQL body. Accepts a `filter` keyword for context extraction. |
@@ -188,19 +188,19 @@ run_query       query:"SELECT TOP 10 ..."  catalog:"Nova"
 **List tools** (`list_tables`, `list_objects`, `search_database_code`, `search_columns`, `get_row_counts`) cap at `ListCap` rows and always append a count notice:
 
 ```
-[Showing 100 of 312 � use the filter parameter to narrow: filter:"Invoice"]
+[Showing 100 of 312 — use the filter parameter to narrow: filter:"Invoice"]
 ```
 
 **Definition tools** (`get_object_definition`, `get_triggers`) apply two modes:
 
 - **Without `filter`**: full body returned up to `DefinitionCharCap` characters, then truncated with a notice
-- **With `filter`**: only blocks of �`ContextLines` lines surrounding each keyword match are returned
+- **With `filter`**: only blocks of ±`ContextLines` lines surrounding each keyword match are returned
 
 ```
--- Lines matching 'InvoiceID' in 'dbo.napProcessOrder' (2 block(s), �15 lines of context):
--- [Lines 47�77]
+-- Lines matching 'InvoiceID' in 'dbo.napProcessOrder' (2 block(s), ±15 lines of context):
+-- [Lines 47–77]
 ... targeted lines ...
--- [Lines 203�233]
+-- [Lines 203–233]
 ... targeted lines ...
 ```
 
@@ -210,22 +210,22 @@ run_query       query:"SELECT TOP 10 ..."  catalog:"Nova"
 
 ```
 SQL_MCP/
-??? Program.cs                  � Host setup, DI registration, discovery arg handling
-??? ServerSettings.cs           � Strongly-typed configuration POCO
-??? SqlConnectionFactory.cs     � Connection and command creation with timeout
-??? ToolHelpers.cs              � Shared formatting utilities (cap notices, definition processing, error formatting)
-??? ManifestService.cs          � --info / --list-tools flag handler
-??? appsettings.json            � Local config (gitignored)
-??? appsettings.example.json    � Committed template for new contributors
-??? mcp-manifest.json           � Static machine-readable server descriptor
-??? AGENT_TESTING.md            � Prompt-ready guide for agent sessions
-??? SQL_MCP.csproj
-??? Tools/
-    ??? NavigationTools.cs      � list_catalogs, list_schemas, list_tables, list_objects
-    ??? DefinitionTools.cs      � get_object_definition
-    ??? SchemaTools.cs          � get_table_schema, get_table_dependencies, search_columns, get_indexes, get_triggers
-    ??? SprocTools.cs           � search_database_code, get_sproc_parameters
-    ??? DataTools.cs            � get_data_sample, run_query, get_row_counts
+├── Program.cs                  — Host setup, DI registration, discovery arg handling
+├── ServerSettings.cs           — Strongly-typed configuration POCO
+├── SqlConnectionFactory.cs     — Connection and command creation with timeout
+├── ToolHelpers.cs              — Shared formatting utilities (cap notices, definition processing, error formatting)
+├── ManifestService.cs          — --info / --list-tools flag handler
+├── appsettings.json            — Local config (gitignored)
+├── appsettings.example.json    — Committed template for new contributors
+├── mcp-manifest.json           — Static machine-readable server descriptor
+├── AGENT_TESTING.md            — Prompt-ready guide for agent sessions
+├── SQL_MCP.csproj
+└── Tools/
+    ├── NavigationTools.cs      — list_catalogs, list_schemas, list_tables, list_objects
+    ├── DefinitionTools.cs      — get_object_definition
+    ├── SchemaTools.cs          — get_table_schema, get_table_dependencies, search_columns, get_indexes, get_triggers
+    ├── SprocTools.cs           — search_database_code, get_sproc_parameters
+    └── DataTools.cs            — get_data_sample, run_query, get_row_counts
 ```
 
 ---
@@ -245,5 +245,5 @@ SQL_MCP/
 
 - `appsettings.json` is excluded from source control via `.gitignore`. Use `appsettings.example.json` as a template.
 - `run_query` enforces read-only access by rejecting any statement that does not begin with `SELECT` and executing within a `READ UNCOMMITTED` transaction.
-- The server has no authentication layer of its own � access control is delegated entirely to SQL Server credentials in the connection string.
+- The server has no authentication layer of its own — access control is delegated entirely to SQL Server credentials in the connection string.
 - For production use, prefer a service account with the minimum required permissions (`db_datareader` on target databases).
