@@ -1,8 +1,6 @@
 using System.ComponentModel;
-using System.ComponentModel;
 using Microsoft.Data.SqlClient;
 using ModelContextProtocol.Server;
-using SQL_MCP;
 
 namespace SQL_MCP.Tools;
 
@@ -12,7 +10,7 @@ public class DefinitionTools(SqlConnectionFactory connectionFactory, ServerSetti
     [McpServerTool, Description("Returns the full T-SQL definition of a stored procedure, view, or function. Use filter to retrieve only lines surrounding a specific keyword instead of the full body.")]
     public async Task<string> get_object_definition(
         [Description("Exact name of the object (e.g., 'sp_GetUserData', 'vw_Orders', 'dbo.fn_GetDiscount').")] string object_name,
-        [Description("Object type: 'procedure', 'view', or 'function'.")] string type,
+        [Description("Object type — required. Use 'procedure', 'view', or 'function'.")] string type,
         [Description("Keyword to find within the body — returns only the ±15 lines around each match instead of the full definition.")] string? filter = null,
         [Description("Database to query (leave empty for default).")] string? catalog = null)
     {

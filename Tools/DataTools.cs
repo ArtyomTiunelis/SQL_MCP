@@ -2,7 +2,6 @@ using System.ComponentModel;
 using System.Text;
 using Microsoft.Data.SqlClient;
 using ModelContextProtocol.Server;
-using SQL_MCP;
 
 namespace SQL_MCP.Tools;
 

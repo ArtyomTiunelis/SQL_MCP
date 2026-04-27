@@ -6,10 +6,11 @@ A [Model Context Protocol (MCP)](https://modelcontextprotocol.io) server that gi
 
 ## Features
 
-- **15 tools** covering discovery, schema inspection, code search, and safe data sampling
+- **26 tools** covering discovery, schema inspection, code search, safe data sampling, and SSIS package exploration
 - **Multi-catalog support** — every tool accepts an optional `catalog` parameter to query any accessible database without reconfiguring
 - **Bounded responses** — list tools cap at a configurable row limit with total-count notices; definition tools truncate at a configurable character limit
 - **Keyword context extraction** — definition and trigger tools accept a `filter` parameter that returns only the ±N lines surrounding each match instead of the full body
+- **SSIS catalog integration** — browse folders, projects, and packages across multiple servers; parse package XML to extract control flow, data flow details, and inline SQL
 - **Read-only enforcement** — `run_query` rejects any statement that does not start with `SELECT`
 - **Structured error handling** — SQL exceptions are caught and returned as clear, agent-readable messages including SQL error number and state
 - **Discoverability flags** — `--info` and `--list-tools` print the server manifest without starting the MCP host
@@ -39,13 +40,16 @@ Edit `appsettings.json` with your connection details:
 ```json
 {
   "ConnectionStrings": {
-    "SqlServer": "Server=YOUR_SERVER;Database=YOUR_DATABASE;Trusted_Connection=True;TrustServerCertificate=True;"
+    "SqlServer": "Server=YOUR_SERVER;Database=YOUR_DATABASE;Trusted_Connection=True;TrustServerCertificate=True;",
+    "SsisServer": "Server=YOUR_SSIS_SERVER;Database=SSISDB;Trusted_Connection=True;TrustServerCertificate=True;"
   },
   "ServerSettings": {
     "ListCap": 100,
     "DefinitionCharCap": 8000,
     "ContextLines": 15,
-    "CommandTimeout": 30
+    "CommandTimeout": 30,
+    "SsisDefinitionCharCap": 12000,
+    "SsisExecutionHistoryLimit": 20
   }
 }
 ```
@@ -129,6 +133,8 @@ All values are in the `ServerSettings` section of `appsettings.json`. Defaults a
 | `DefinitionCharCap` | `8000` | Maximum characters returned from a definition body. Truncated definitions include a notice with the full character count and instructions to use the `filter` parameter. |
 | `ContextLines` | `15` | Lines of surrounding context returned per keyword match when using the `filter` parameter on definition tools. |
 | `CommandTimeout` | `30` | SQL command timeout in seconds applied to all queries. |
+| `SsisDefinitionCharCap` | `12000` | Maximum characters returned from an SSIS package definition summary before truncation. |
+| `SsisExecutionHistoryLimit` | `20` | Maximum number of recent SSIS executions returned by `get_ssis_execution_history`. |
 
 ---
 
@@ -168,6 +174,27 @@ All values are in the `ServerSettings` section of `appsettings.json`. Defaults a
 | `get_row_counts` | Returns approximate row counts for all tables using SQL Server statistics, sorted by volume descending. |
 | `get_data_sample` | Returns the TOP 5 rows from a table. |
 | `run_query` | Executes a read-only `SELECT` statement. Results are capped at 200 rows. All write and DDL statements are rejected. |
+
+### SSIS Catalog
+
+| Tool | Description |
+|---|---|
+| `list_ssis_folders` | Lists all SSIS catalog folders across all configured servers. |
+| `list_ssis_projects` | Lists projects in a catalog folder. |
+| `list_ssis_packages` | Lists packages in a project. |
+| `get_ssis_package_parameters` | Returns parameters for an SSIS package. |
+| `search_ssis_packages` | Searches package names across all servers for a keyword. |
+| `get_ssis_execution_history` | Returns recent execution history for a package. |
+| `get_ssis_execution_errors` | Returns error messages for a specific execution. |
+
+### SSIS Package Definitions
+
+| Tool | Description |
+|---|---|
+| `get_ssis_package_definition` | Returns a summarized view of a package: tasks, data flows, precedence constraints, and connection managers parsed from the package XML. |
+| `get_ssis_dataflow_details` | Returns details of a Data Flow task: source/destination components, transformations, SQL commands, and column mappings. |
+| `get_ssis_sql_statements` | Extracts all inline SQL from Execute SQL tasks and Data Flow components in a package. |
+| `search_ssis_package_content` | Searches the raw XML of all packages in a folder/project for a keyword to find which packages reference a table, column, or sproc. |
 
 ---
 
@@ -218,14 +245,15 @@ SQL_MCP/
 ├── appsettings.json            — Local config (gitignored)
 ├── appsettings.example.json    — Committed template for new contributors
 ├── mcp-manifest.json           — Static machine-readable server descriptor
-├── AGENT_TESTING.md            — Prompt-ready guide for agent sessions
 ├── SQL_MCP.csproj
 └── Tools/
     ├── NavigationTools.cs      — list_catalogs, list_schemas, list_tables, list_objects
     ├── DefinitionTools.cs      — get_object_definition
     ├── SchemaTools.cs          — get_table_schema, get_table_dependencies, search_columns, get_indexes, get_triggers
     ├── SprocTools.cs           — search_database_code, get_sproc_parameters
-    └── DataTools.cs            — get_data_sample, run_query, get_row_counts
+    ├── DataTools.cs            — get_data_sample, run_query, get_row_counts
+    ├── SsisTools.cs            — list_ssis_folders, list_ssis_projects, list_ssis_packages, get_ssis_package_parameters, search_ssis_packages, get_ssis_execution_history, get_ssis_execution_errors
+    └── SsisPackageDefinitionTools.cs — get_ssis_package_definition, get_ssis_dataflow_details, get_ssis_sql_statements, search_ssis_package_content
 ```
 
 ---
@@ -245,5 +273,8 @@ SQL_MCP/
 
 - `appsettings.json` is excluded from source control via `.gitignore`. Use `appsettings.example.json` as a template.
 - `run_query` enforces read-only access by rejecting any statement that does not begin with `SELECT` and executing within a `READ UNCOMMITTED` transaction.
+- SSIS tools are read-only — no package execution or modification is possible.
+- SSIS package XML parsing tools require `ssis_admin` role on SSISDB. Catalog metadata tools work with standard read permissions.
+- Connection strings in SSIS connection managers are displayed with passwords masked.
 - The server has no authentication layer of its own — access control is delegated entirely to SQL Server credentials in the connection string.
-- For production use, prefer a service account with the minimum required permissions (`db_datareader` on target databases).
+- For production use, prefer a service account with the minimum required permissions (`db_datareader` on target databases, `ssis_admin` on SSISDB).

@@ -1,20 +1,35 @@
 {
   "name": "SQL_MCP",
   "version": "1.0.0",
-  "description": "An MCP server that provides AI agents with structured read access to a SQL Server database — schemas, stored procedures, foreign key dependencies, code search, and data sampling.",
+  "description": "An MCP server that provides AI agents with structured read access to a SQL Server database ï¿½ schemas, stored procedures, foreign key dependencies, code search, and data sampling.",
   "transport": "stdio",
   "command": "dotnet",
   "args": [ "run", "--project", "SQL_MCP.csproj" ],
-  "toolCount": 16,
+  "toolCount": 26,
   "tools": [
     {
-      "name": "get_sproc_definition",
-      "description": "Retrieves the full T-SQL script definition of a specific stored procedure. Use this tool when you need to understand the exact internal logic, input parameters, or output result sets of a procedure called by the application code.",
+      "name": "get_object_definition",
+      "description": "Returns the full T-SQL definition of a stored procedure, view, or function. Use filter to retrieve only lines surrounding a specific keyword instead of the full body.",
       "parameters": {
-        "sproc_name": {
+        "object_name": {
           "type": "string",
           "required": true,
-          "description": "The exact name of the stored procedure (e.g., 'sp_GetUserData' or 'dbo.sp_ProcessOrder')."
+          "description": "Exact name of the object (e.g., 'sp_GetUserData', 'vw_Orders', 'dbo.fn_GetDiscount')."
+        },
+        "type": {
+          "type": "string",
+          "required": true,
+          "description": "Object type â€” required. Use 'procedure', 'view', or 'function'."
+        },
+        "filter": {
+          "type": "string",
+          "required": false,
+          "description": "Keyword to find within the body â€” returns only the Â±15 lines around each match instead of the full definition."
+        },
+        "catalog": {
+          "type": "string",
+          "required": false,
+          "description": "Database to query (leave empty for default)."
         }
       }
     },
@@ -69,7 +84,7 @@
     },
     {
       "name": "list_tables",
-      "description": "Lists all user tables in the database, optionally filtered by schema. Use this as your first step when exploring an unfamiliar database — never guess table names.",
+      "description": "Lists all user tables in the database, optionally filtered by schema. Use this as your first step when exploring an unfamiliar database ï¿½ never guess table names.",
       "parameters": {
         "schema": {
           "type": "string",
@@ -151,7 +166,7 @@
     },
     {
       "name": "run_query",
-      "description": "Executes a read-only SELECT query and returns results (capped at 200 rows). Only SELECT statements are permitted — all write and DDL statements are rejected.",
+      "description": "Executes a read-only SELECT query and returns results (capped at 200 rows). Only SELECT statements are permitted ï¿½ all write and DDL statements are rejected.",
       "parameters": {
         "query": {
           "type": "string",
@@ -173,13 +188,106 @@
     },
     {
       "name": "get_sproc_parameters",
-      "description": "Returns just the parameter signature of a stored procedure — names, types, direction, and defaults — without fetching the full body.",
+      "description": "Returns just the parameter signature of a stored procedure â€” names, types, direction, and defaults â€” without fetching the full body.",
       "parameters": {
         "sproc_name": {
           "type": "string",
           "required": true,
           "description": "The exact name of the stored procedure."
         }
+      }
+    },
+    {
+      "name": "list_ssis_folders",
+      "description": "Lists all SSIS catalog folders across all configured servers.",
+      "parameters": {}
+    },
+    {
+      "name": "list_ssis_projects",
+      "description": "Lists SSIS projects in a catalog folder.",
+      "parameters": {
+        "folder_name": { "type": "string", "required": true, "description": "Folder name to list projects from." }
+      }
+    },
+    {
+      "name": "list_ssis_packages",
+      "description": "Lists SSIS packages in a project.",
+      "parameters": {
+        "project_name": { "type": "string", "required": true, "description": "Project name." },
+        "folder_name": { "type": "string", "required": true, "description": "Folder name." }
+      }
+    },
+    {
+      "name": "get_ssis_package_parameters",
+      "description": "Returns parameters for an SSIS package.",
+      "parameters": {
+        "package_name": { "type": "string", "required": true, "description": "Package name (e.g., 'MyPackage.dtsx')." },
+        "project_name": { "type": "string", "required": true, "description": "Project name." },
+        "folder_name": { "type": "string", "required": true, "description": "Folder name." }
+      }
+    },
+    {
+      "name": "search_ssis_packages",
+      "description": "Searches SSIS package names across all servers for a keyword.",
+      "parameters": {
+        "search_term": { "type": "string", "required": true, "description": "Keyword to search for in package names." }
+      }
+    },
+    {
+      "name": "get_ssis_execution_history",
+      "description": "Returns recent execution history for an SSIS package.",
+      "parameters": {
+        "package_name": { "type": "string", "required": true, "description": "Package name." },
+        "project_name": { "type": "string", "required": true, "description": "Project name." },
+        "folder_name": { "type": "string", "required": true, "description": "Folder name." }
+      }
+    },
+    {
+      "name": "get_ssis_execution_errors",
+      "description": "Returns error messages for a specific SSIS execution.",
+      "parameters": {
+        "execution_id": { "type": "integer", "required": true, "description": "Execution ID from get_ssis_execution_history." },
+        "server_label": { "type": "string", "required": true, "description": "Server label: 'MainServer' or 'SsisServer'." }
+      }
+    },
+    {
+      "name": "get_ssis_package_definition",
+      "description": "Returns a summarized view of an SSIS package: tasks, data flows, precedence constraints, and connection managers parsed from the package XML.",
+      "parameters": {
+        "package_name": { "type": "string", "required": true, "description": "Package name (e.g., 'MyPackage.dtsx')." },
+        "project_name": { "type": "string", "required": true, "description": "Project name." },
+        "folder_name": { "type": "string", "required": true, "description": "Folder name." },
+        "server_label": { "type": "string", "required": false, "description": "Server label: 'MainServer' or 'SsisServer'. Leave empty to search both." }
+      }
+    },
+    {
+      "name": "get_ssis_dataflow_details",
+      "description": "Returns details of a Data Flow task: source/destination components, transformations, SQL commands, and column mappings.",
+      "parameters": {
+        "dataflow_task_name": { "type": "string", "required": true, "description": "Name of the Data Flow task as shown in get_ssis_package_definition." },
+        "package_name": { "type": "string", "required": true, "description": "Package name." },
+        "project_name": { "type": "string", "required": true, "description": "Project name." },
+        "folder_name": { "type": "string", "required": true, "description": "Folder name." },
+        "server_label": { "type": "string", "required": false, "description": "Server label. Leave empty to search both." }
+      }
+    },
+    {
+      "name": "get_ssis_sql_statements",
+      "description": "Extracts all inline SQL from Execute SQL tasks and Data Flow components in an SSIS package.",
+      "parameters": {
+        "package_name": { "type": "string", "required": true, "description": "Package name." },
+        "project_name": { "type": "string", "required": true, "description": "Project name." },
+        "folder_name": { "type": "string", "required": true, "description": "Folder name." },
+        "server_label": { "type": "string", "required": false, "description": "Server label. Leave empty to search both." }
+      }
+    },
+    {
+      "name": "search_ssis_package_content",
+      "description": "Searches the raw XML of all SSIS packages in a folder/project for a keyword to find which packages reference a table, column, or sproc.",
+      "parameters": {
+        "search_term": { "type": "string", "required": true, "description": "Keyword to search for in package XML." },
+        "folder_name": { "type": "string", "required": true, "description": "Folder name to limit search scope." },
+        "project_name": { "type": "string", "required": false, "description": "Project name. Leave empty for all projects in the folder." }
       }
     }
   ]

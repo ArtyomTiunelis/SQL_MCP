@@ -1,9 +1,7 @@
 using System.ComponentModel;
-using System.ComponentModel;
 using System.Text;
 using Microsoft.Data.SqlClient;
 using ModelContextProtocol.Server;
-using SQL_MCP;
 
 namespace SQL_MCP.Tools;
 
@@ -31,6 +29,7 @@ public class SprocTools(SqlConnectionFactory connectionFactory, ServerSettings s
         {
         await connection.OpenAsync();
         await using var command = connectionFactory.CreateCommand(sql, connection);
+        command.Parameters.AddWithValue("@term", $"%{search_term}%");
 
         await using var reader = await command.ExecuteReaderAsync();
         var rows = new List<string>();
@@ -80,6 +79,7 @@ public class SprocTools(SqlConnectionFactory connectionFactory, ServerSettings s
         {
         await connection.OpenAsync();
         await using var command = connectionFactory.CreateCommand(sql, connection);
+        command.Parameters.AddWithValue("@name", sproc_name);
 
         await using var reader = await command.ExecuteReaderAsync();
         var sb = new StringBuilder();
