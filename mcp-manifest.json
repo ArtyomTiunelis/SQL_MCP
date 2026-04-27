@@ -5,7 +5,7 @@
   "transport": "stdio",
   "command": "dotnet",
   "args": [ "run", "--project", "SQL_MCP.csproj" ],
-  "toolCount": 26,
+  "toolCount": 31,
   "tools": [
     {
       "name": "get_object_definition",
@@ -198,6 +198,18 @@
       }
     },
     {
+      "name": "list_ssis_servers",
+      "description": "Lists the configured SSIS server labels that can be passed to server_label parameters.",
+      "parameters": {}
+    },
+    {
+      "name": "resolve_ssis_package",
+      "description": "Resolves a package name (or partial name) to the full folder/project/package/server_label needed by other endpoints. Use this first when you only know the package name.",
+      "parameters": {
+        "package_name": { "type": "string", "required": true, "description": "Full or partial package name to search for." }
+      }
+    },
+    {
       "name": "list_ssis_folders",
       "description": "Lists all SSIS catalog folders across all configured servers.",
       "parameters": {}
@@ -206,7 +218,7 @@
       "name": "list_ssis_projects",
       "description": "Lists SSIS projects in a catalog folder.",
       "parameters": {
-        "folder_name": { "type": "string", "required": true, "description": "Folder name to list projects from." }
+        "folder_name": { "type": "string", "required": true, "description": "Folder name to list projects from. Use list_ssis_folders to discover." }
       }
     },
     {
@@ -227,19 +239,36 @@
       }
     },
     {
+      "name": "get_ssis_project_parameters",
+      "description": "Returns project-level parameters for an SSIS project.",
+      "parameters": {
+        "project_name": { "type": "string", "required": true, "description": "Project name." },
+        "folder_name": { "type": "string", "required": true, "description": "Folder name." }
+      }
+    },
+    {
+      "name": "get_ssis_environment_references",
+      "description": "Returns environment references and their variables for an SSIS project. Shows which environments are linked and what values they provide.",
+      "parameters": {
+        "project_name": { "type": "string", "required": true, "description": "Project name." },
+        "folder_name": { "type": "string", "required": true, "description": "Folder name." }
+      }
+    },
+    {
       "name": "search_ssis_packages",
-      "description": "Searches SSIS package names across all servers for a keyword.",
+      "description": "Searches SSIS package names across all servers for a keyword. Returns folder/project/package per match with server labels - use these values directly in other endpoints.",
       "parameters": {
         "search_term": { "type": "string", "required": true, "description": "Keyword to search for in package names." }
       }
     },
     {
       "name": "get_ssis_execution_history",
-      "description": "Returns recent execution history for an SSIS package.",
+      "description": "Returns recent execution history for an SSIS package. Set latest_only to get the most recent execution with inline error messages.",
       "parameters": {
         "package_name": { "type": "string", "required": true, "description": "Package name." },
         "project_name": { "type": "string", "required": true, "description": "Project name." },
-        "folder_name": { "type": "string", "required": true, "description": "Folder name." }
+        "folder_name": { "type": "string", "required": true, "description": "Folder name." },
+        "latest_only": { "type": "boolean", "required": false, "description": "If true, returns only the latest execution and includes error messages inline if it failed." }
       }
     },
     {
@@ -247,7 +276,7 @@
       "description": "Returns error messages for a specific SSIS execution.",
       "parameters": {
         "execution_id": { "type": "integer", "required": true, "description": "Execution ID from get_ssis_execution_history." },
-        "server_label": { "type": "string", "required": true, "description": "Server label: 'MainServer' or 'SsisServer'." }
+        "server_label": { "type": "string", "required": true, "description": "Server label from list_ssis_servers. Identifies which server the execution ran on." }
       }
     },
     {
@@ -262,7 +291,7 @@
     },
     {
       "name": "get_ssis_dataflow_details",
-      "description": "Returns details of a Data Flow task: source/destination components, transformations, SQL commands, and column mappings.",
+      "description": "Returns details of a specific Data Flow task in an SSIS package: source/destination components, transformations, and column mappings.",
       "parameters": {
         "dataflow_task_name": { "type": "string", "required": true, "description": "Name of the Data Flow task as shown in get_ssis_package_definition." },
         "package_name": { "type": "string", "required": true, "description": "Package name." },
@@ -273,7 +302,7 @@
     },
     {
       "name": "get_ssis_sql_statements",
-      "description": "Extracts all inline SQL from Execute SQL tasks and Data Flow components in an SSIS package.",
+      "description": "Extracts all inline SQL statements from an SSIS package — from Execute SQL tasks, OLE DB sources/destinations, and other components.",
       "parameters": {
         "package_name": { "type": "string", "required": true, "description": "Package name." },
         "project_name": { "type": "string", "required": true, "description": "Project name." },
@@ -283,11 +312,11 @@
     },
     {
       "name": "search_ssis_package_content",
-      "description": "Searches the raw XML of all SSIS packages in a folder/project for a keyword to find which packages reference a table, column, or sproc.",
+      "description": "Searches the raw XML content of all SSIS packages for a keyword (table name, column, sproc, etc.). Finds which packages reference it.",
       "parameters": {
         "search_term": { "type": "string", "required": true, "description": "Keyword to search for in package XML." },
         "folder_name": { "type": "string", "required": true, "description": "Folder name to limit search scope." },
-        "project_name": { "type": "string", "required": false, "description": "Project name. Leave empty for all projects in the folder." }
+        "project_name": { "type": "string", "required": false, "description": "Project name to limit search scope. Leave empty for all projects in the folder." }
       }
     }
   ]

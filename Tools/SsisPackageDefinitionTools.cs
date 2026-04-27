@@ -21,7 +21,7 @@ public class SsisPackageDefinitionTools(SqlConnectionFactory connectionFactory, 
         [Description("Server label: 'MainServer' or 'SsisServer'. Leave empty to search both.")] string? server_label = null)
     {
         var xml = await GetPackageXml(package_name, project_name, folder_name, server_label);
-        if (xml.StartsWith("Error") || xml.StartsWith("No ") || xml.StartsWith("Server"))
+        if (xml.StartsWith('['))
             return xml;
 
         var doc = XDocument.Parse(xml);
@@ -109,7 +109,7 @@ public class SsisPackageDefinitionTools(SqlConnectionFactory connectionFactory, 
         [Description("Server label: 'MainServer' or 'SsisServer'. Leave empty to search both.")] string? server_label = null)
     {
         var xml = await GetPackageXml(package_name, project_name, folder_name, server_label);
-        if (xml.StartsWith("Error") || xml.StartsWith("No ") || xml.StartsWith("Server"))
+        if (xml.StartsWith('['))
             return xml;
 
         var doc = XDocument.Parse(xml);
@@ -202,7 +202,7 @@ public class SsisPackageDefinitionTools(SqlConnectionFactory connectionFactory, 
         [Description("Server label: 'MainServer' or 'SsisServer'. Leave empty to search both.")] string? server_label = null)
     {
         var xml = await GetPackageXml(package_name, project_name, folder_name, server_label);
-        if (xml.StartsWith("Error") || xml.StartsWith("No ") || xml.StartsWith("Server"))
+        if (xml.StartsWith('['))
             return xml;
 
         var doc = XDocument.Parse(xml);
@@ -405,7 +405,7 @@ public class SsisPackageDefinitionTools(SqlConnectionFactory connectionFactory, 
             }
             catch (SqlException ex) when (ex.Number == 229 || ex.Number == 230)
             {
-                return $"[{label}] Access denied. Package XML requires 'ssis_admin' or 'db_owner' role on SSISDB. (SQL {ex.Number}: {ex.Message})";
+                return $"[ACCESS_DENIED] [{label}] Package XML requires 'ssis_admin' or 'db_owner' role on SSISDB. (SQL {ex.Number}: {ex.Message})";
             }
             catch (SqlException ex) when (ex.Number == 208 || ex.Number == 4060)
             {
@@ -413,7 +413,7 @@ public class SsisPackageDefinitionTools(SqlConnectionFactory connectionFactory, 
             }
             catch (SqlException ex)
             {
-                return $"Error querying [{label}]: {ex.Message}";
+                return $"[SERVER_ERROR] [{label}] {ex.Message}";
             }
             finally
             {
@@ -421,7 +421,7 @@ public class SsisPackageDefinitionTools(SqlConnectionFactory connectionFactory, 
             }
         }
 
-        return $"No package '{packageName}' found in project '{projectName}' folder '{folderName}'.";
+        return $"[NOT_FOUND] No package '{packageName}' found in project '{projectName}' folder '{folderName}'.";
     }
 
     private void FormatExecutable(XElement exe, StringBuilder sb, int indent)
@@ -443,6 +443,42 @@ public class SsisPackageDefinitionTools(SqlConnectionFactory connectionFactory, 
                 var preview = sqlSource.Trim().ReplaceLineEndings(" ");
                 if (preview.Length > 200) preview = preview[..200] + "...";
                 sb.AppendLine($"{prefix}  SQL: {preview}");
+            }
+        }
+
+        // For Data Flow tasks, show source and destination component names inline
+        if (taskType == "Data Flow")
+        {
+            var pipeline = exe.Descendants("pipeline").FirstOrDefault()
+                           ?? exe.Descendants(DtsNs + "pipeline").FirstOrDefault();
+            if (pipeline is not null)
+            {
+                var components = pipeline.Descendants("component").ToList();
+                if (components.Count == 0)
+                    components = pipeline.Descendants(DtsNs + "component").ToList();
+
+                var sources = new List<string>();
+                var destinations = new List<string>();
+                var transforms = new List<string>();
+
+                foreach (var comp in components)
+                {
+                    var compName = comp.Attribute("name")?.Value ?? "(unnamed)";
+                    var contactInfo = comp.Attribute("contactInfo")?.Value ?? "";
+                    var classId = comp.Attribute("componentClassID")?.Value ?? "";
+                    var kind = categorizeComponent(contactInfo, classId);
+
+                    if (kind == "Source") sources.Add(compName);
+                    else if (kind == "Destination") destinations.Add(compName);
+                    else transforms.Add($"{compName} ({kind})");
+                }
+
+                if (sources.Count > 0)
+                    sb.AppendLine($"{prefix}  Sources: {string.Join(", ", sources)}");
+                if (destinations.Count > 0)
+                    sb.AppendLine($"{prefix}  Destinations: {string.Join(", ", destinations)}");
+                if (transforms.Count > 0)
+                    sb.AppendLine($"{prefix}  Transforms: {string.Join(", ", transforms)}");
             }
         }
 
