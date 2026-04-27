@@ -1,0 +1,17 @@
+# Build outputs
+bin/
+obj/
+
+# User-specific settings and secrets
+appsettings.json
+appsettings.local.json
+appsettings.*.json
+!appsettings.example.json
+
+# Visual Studio
+.vs/
+*.user
+*.suo
+
+# Rider
+.idea/

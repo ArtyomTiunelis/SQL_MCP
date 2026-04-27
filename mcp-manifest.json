@@ -1,0 +1,186 @@
+{
+  "name": "SQL_MCP",
+  "version": "1.0.0",
+  "description": "An MCP server that provides AI agents with structured read access to a SQL Server database — schemas, stored procedures, foreign key dependencies, code search, and data sampling.",
+  "transport": "stdio",
+  "command": "dotnet",
+  "args": [ "run", "--project", "SQL_MCP.csproj" ],
+  "toolCount": 16,
+  "tools": [
+    {
+      "name": "get_sproc_definition",
+      "description": "Retrieves the full T-SQL script definition of a specific stored procedure. Use this tool when you need to understand the exact internal logic, input parameters, or output result sets of a procedure called by the application code.",
+      "parameters": {
+        "sproc_name": {
+          "type": "string",
+          "required": true,
+          "description": "The exact name of the stored procedure (e.g., 'sp_GetUserData' or 'dbo.sp_ProcessOrder')."
+        }
+      }
+    },
+    {
+      "name": "search_database_code",
+      "description": "Searches the raw SQL text definitions of all stored procedures, views, and functions for a specific keyword, table name, or column name. Useful for tracing dependencies, finding where a specific table is updated, or locating poorly-named logic across the database.",
+      "parameters": {
+        "search_term": {
+          "type": "string",
+          "required": true,
+          "description": "The keyword, variable, or object name to search for within the database code."
+        }
+      }
+    },
+    {
+      "name": "get_table_schema",
+      "description": "Retrieves the database schema details for a specific table. Returns a structured list of column names, their specific SQL data types, maximum character lengths, and whether they allow NULL values. Use this to understand the data contract before writing queries or application models.",
+      "parameters": {
+        "table_name": {
+          "type": "string",
+          "required": true,
+          "description": "The exact name of the database table (e.g., 'Users' or 'dbo.Orders')."
+        }
+      }
+    },
+    {
+      "name": "get_table_dependencies",
+      "description": "Retrieves all Foreign Key relationships associated with a specific table. Returns data showing where the table acts as a parent (referenced by others) and where it acts as a child (referencing others). Crucial for understanding entity relationships and writing accurate JOIN statements.",
+      "parameters": {
+        "table_name": {
+          "type": "string",
+          "required": true,
+          "description": "The exact name of the database table to check for foreign key dependencies."
+        }
+      }
+    },
+    {
+      "name": "get_data_sample",
+      "description": "Retrieves a safe, highly limited sample (TOP 5 rows) of actual data from a specific table. Use this tool to inspect real-world data formatting, understand the actual values of enumerations/status codes, and verify edge cases that the schema alone does not explain.",
+      "parameters": {
+        "table_name": {
+          "type": "string",
+          "required": true,
+          "description": "The exact name of the database table to sample."
+        }
+      }
+    },
+    {
+      "name": "list_schemas",
+      "description": "Lists all user-defined schemas in the database. Call this first on any unfamiliar database to understand how objects are partitioned before calling list_tables or list_objects.",
+      "parameters": {}
+    },
+    {
+      "name": "list_tables",
+      "description": "Lists all user tables in the database, optionally filtered by schema. Use this as your first step when exploring an unfamiliar database — never guess table names.",
+      "parameters": {
+        "schema": {
+          "type": "string",
+          "required": false,
+          "description": "Optional schema name to filter by (e.g., 'dbo', 'core'). Leave empty to list tables from all schemas."
+        }
+      }
+    },
+    {
+      "name": "list_objects",
+      "description": "Lists all stored procedures, views, or functions in the database, optionally filtered by schema and/or object type. Use this to discover what code exists before searching inside it.",
+      "parameters": {
+        "schema": {
+          "type": "string",
+          "required": false,
+          "description": "Optional schema name to filter by. Leave empty for all schemas."
+        },
+        "type": {
+          "type": "string",
+          "required": false,
+          "description": "Optional object type filter: 'procedure', 'view', 'function'. Leave empty for all types."
+        }
+      }
+    },
+    {
+      "name": "get_view_definition",
+      "description": "Retrieves the full T-SQL definition of a specific view.",
+      "parameters": {
+        "view_name": {
+          "type": "string",
+          "required": true,
+          "description": "The exact name of the view (e.g., 'vw_ActiveOrders' or 'dbo.vw_ActiveOrders')."
+        }
+      }
+    },
+    {
+      "name": "get_function_definition",
+      "description": "Retrieves the full T-SQL definition of a specific scalar or table-valued function.",
+      "parameters": {
+        "function_name": {
+          "type": "string",
+          "required": true,
+          "description": "The exact name of the function (e.g., 'fn_GetDiscount' or 'dbo.fn_GetDiscount')."
+        }
+      }
+    },
+    {
+      "name": "search_columns",
+      "description": "Finds all tables that contain a column matching the given name or partial name.",
+      "parameters": {
+        "column_name": {
+          "type": "string",
+          "required": true,
+          "description": "The column name or partial name to search for (e.g., 'StatusID', 'Customer')."
+        }
+      }
+    },
+    {
+      "name": "get_indexes",
+      "description": "Retrieves all indexes defined on a specific table including column membership, uniqueness, and clustering. Use this before writing queries on large tables.",
+      "parameters": {
+        "table_name": {
+          "type": "string",
+          "required": true,
+          "description": "The exact name of the database table."
+        }
+      }
+    },
+    {
+      "name": "get_triggers",
+      "description": "Retrieves all triggers defined on a specific table including their full T-SQL body. Triggers often contain hidden business logic not visible in stored procedures.",
+      "parameters": {
+        "table_name": {
+          "type": "string",
+          "required": true,
+          "description": "The exact name of the database table."
+        }
+      }
+    },
+    {
+      "name": "run_query",
+      "description": "Executes a read-only SELECT query and returns results (capped at 200 rows). Only SELECT statements are permitted — all write and DDL statements are rejected.",
+      "parameters": {
+        "query": {
+          "type": "string",
+          "required": true,
+          "description": "A valid read-only SELECT statement to execute."
+        }
+      }
+    },
+    {
+      "name": "get_row_counts",
+      "description": "Returns the approximate row count for all tables using SQL Server internal statistics. Call this before querying to understand data volume.",
+      "parameters": {
+        "schema": {
+          "type": "string",
+          "required": false,
+          "description": "Optional schema name to filter by. Leave empty for all tables."
+        }
+      }
+    },
+    {
+      "name": "get_sproc_parameters",
+      "description": "Returns just the parameter signature of a stored procedure — names, types, direction, and defaults — without fetching the full body.",
+      "parameters": {
+        "sproc_name": {
+          "type": "string",
+          "required": true,
+          "description": "The exact name of the stored procedure."
+        }
+      }
+    }
+  ]
+}
