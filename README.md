@@ -93,18 +93,35 @@ Add to `%APPDATA%\Claude\claude_desktop_config.json`:
 
 Restart Claude Desktop. The tools will appear automatically in the tool panel.
 
-### Visual Studio
+### GitHub Copilot in Visual Studio 2022
 
-Visual Studio can use the same MCP server definition through its Copilot/MCP configuration. Add this server entry to the Visual Studio MCP config file you use for your profile or solution, then restart Visual Studio.
+Visual Studio natively supports MCP servers through GitHub Copilot Agent mode. You simply need to create or edit an `.mcp.json` file in the appropriate location.
 
-To find the config in Visual Studio:
+User-wide setup:
 
-1. Open Visual Studio.
-2. Go to Tools > Options.
-3. Search for Copilot or MCP in the Options search box.
-4. Open the Copilot/MCP settings page for your version of Visual Studio.
-5. Use the config file or profile location shown there, then add the server entry below.
-6. Restart Visual Studio after saving.
+- `%USERPROFILE%\.mcp.json`
+
+To keep the server available across all your Visual Studio projects:
+
+1. Open File Explorer.
+2. Paste `%USERPROFILE%` into the address bar and press Enter.
+3. Open or create a file named `.mcp.json` in that folder.
+4. Add the server entry below and save the file.
+5. Visual Studio will automatically detect the changes and reload the agent (no restart required).
+
+Workspace-specific setup:
+
+- `.mcp.json` (in the repository root)
+
+To keep the server scoped to one repository (and optionally commit it to source control for the team):
+
+1. Open the repository in Visual Studio.
+2. In the Solution Explorer, right-click the root folder or solution and select **Add > New Item**.
+3. Create a file named `.mcp.json` in the root directory.
+4. Add the same server entry below and save the file.
+5. Visual Studio will automatically detect the changes and reload the agent.
+
+Use the same server definition in either location:
 
 ```json
 {
@@ -118,12 +135,9 @@ To find the config in Visual Studio:
         "C:\\path\\to\\SQL_MCP\\SQL_MCP.csproj"
       ]
     }
-  },
-  "inputs": []
+  }
 }
-```
-
-If you want the server available everywhere, keep the config in your user profile. If you want it tied to one repository, keep the same JSON in a solution-level or workspace-level MCP config file.
+``` 
 
 ### GitHub Copilot in VS Code
 
