@@ -1,6 +1,6 @@
 ﻿# SQL MCP Server
 
-A [Model Context Protocol (MCP)](https://modelcontextprotocol.io) server that gives AI agents structured, read-only access to a SQL Server database. Built on .NET 8 using the `stdio` transport, it is compatible with any MCP-capable client — Claude Desktop, GitHub Copilot Agent Mode, the MCP Inspector, or a custom host.
+A [Model Context Protocol (MCP)](https://modelcontextprotocol.io) server that gives AI agents structured, read-only access to a SQL Server database. Built on .NET 8 using the `stdio` transport, it is compatible with any MCP-capable client — Claude Desktop, Visual Studio, Visual Studio Code, GitHub Copilot Agent Mode, the MCP Inspector, or a custom host.
 
 ---
 
@@ -74,7 +74,7 @@ dotnet run -- --list-tools
 
 ## Connecting to an MCP Client
 
-The server communicates over **stdio** (standard input/output). It cannot be tested by typing into a terminal directly — it requires an MCP client.
+The server communicates over **stdio** (standard input/output). It cannot be tested by typing into a terminal directly — it requires an MCP client. For IDEs, the cleanest setup is to register the server in an `mcp.json` file.
 
 ### Claude Desktop
 
@@ -93,25 +93,61 @@ Add to `%APPDATA%\Claude\claude_desktop_config.json`:
 
 Restart Claude Desktop. The tools will appear automatically in the tool panel.
 
-### GitHub Copilot (VS Code Agent Mode)
+### Visual Studio
 
-Add to VS Code `settings.json` (`Ctrl+Shift+P` → *Open User Settings JSON*):
+Visual Studio can use the same MCP server definition through its Copilot/MCP configuration. Add this server entry to the Visual Studio MCP config file you use for your profile or solution, then restart Visual Studio.
 
 ```json
-"mcp": {
+{
   "servers": {
     "sql-mcp": {
       "type": "stdio",
       "command": "dotnet",
-      "args": ["run", "--project", "C:\\path\\to\\SQL_MCP\\SQL_MCP.csproj"]
+      "args": [
+        "run",
+        "--project",
+        "C:\\path\\to\\SQL_MCP\\SQL_MCP.csproj"
+      ]
     }
-  }
+  },
+  "inputs": []
 }
 ```
 
-Switch Copilot Chat to **Agent mode** to use the tools.
+If you want the server available everywhere, keep the config in your user profile. If you want it tied to one repository, keep the same JSON in a solution-level or workspace-level MCP config file.
 
-### MCP Inspector (browser UI for testing)
+### GitHub Copilot in VS Code
+
+Create or edit the VS Code MCP config file instead of putting the server entry in `settings.json`.
+
+User-wide setup:
+
+- `%APPDATA%\Code\User\mcp.json`
+
+Workspace-specific setup:
+
+- `.vscode/mcp.json`
+
+Use the same server definition in either location:
+
+```json
+{
+  "servers": {
+    "sql-mcp": {
+      "type": "stdio",
+      "command": "dotnet",
+      "args": [
+        "run",
+        "--project",
+        "C:\\path\\to\\SQL_MCP\\SQL_MCP.csproj"
+      ]
+    }
+  },
+  "inputs": []
+}
+```
+
+After saving the file, restart VS Code and switch Copilot Chat to **Agent mode** to use the tools.
 
 Requires Node.js:
 
