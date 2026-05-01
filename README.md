@@ -97,6 +97,15 @@ Restart Claude Desktop. The tools will appear automatically in the tool panel.
 
 Visual Studio can use the same MCP server definition through its Copilot/MCP configuration. Add this server entry to the Visual Studio MCP config file you use for your profile or solution, then restart Visual Studio.
 
+To find the config in Visual Studio:
+
+1. Open Visual Studio.
+2. Go to Tools > Options.
+3. Search for Copilot or MCP in the Options search box.
+4. Open the Copilot/MCP settings page for your version of Visual Studio.
+5. Use the config file or profile location shown there, then add the server entry below.
+6. Restart Visual Studio after saving.
+
 ```json
 {
   "servers": {
@@ -124,9 +133,25 @@ User-wide setup:
 
 - `%APPDATA%\Code\User\mcp.json`
 
+To find the user profile config in VS Code:
+
+1. Open File Explorer.
+2. Paste `%APPDATA%\Code\User` into the address bar.
+3. Open or create `mcp.json` in that folder.
+4. Add the server entry below and save the file.
+5. Restart VS Code.
+
 Workspace-specific setup:
 
 - `.vscode/mcp.json`
+
+To keep the server scoped to one repository:
+
+1. Open the repository in VS Code.
+2. Create a `.vscode` folder if it does not already exist.
+3. Create or edit `.vscode/mcp.json`.
+4. Add the same server entry below and save the file.
+5. Restart VS Code.
 
 Use the same server definition in either location:
 
