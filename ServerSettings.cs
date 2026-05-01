@@ -13,4 +13,10 @@ public class ServerSettings
 
     /// <summary>SQL command timeout in seconds applied to all queries.</summary>
     public int CommandTimeout { get; init; } = 30;
+
+    /// <summary>Maximum characters returned from an SSIS package definition summary before truncation.</summary>
+    public int SsisDefinitionCharCap { get; init; } = 12_000;
+
+    /// <summary>Maximum number of recent SSIS executions to return.</summary>
+    public int SsisExecutionHistoryLimit { get; init; } = 20;
 }

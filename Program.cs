@@ -1,13 +1,18 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using ModelContextProtocol.Server;
+using Microsoft.Extensions.Logging;
 using SQL_MCP;
 
 if (ManifestService.HandleDiscoveryArgs(args))
     return;
 
 var builder = Host.CreateApplicationBuilder(args);
+
+// Redirect all logs to stderr — stdout must be reserved exclusively for
+// the MCP JSON-RPC stream when using the stdio transport.
+builder.Logging.AddConsole(options =>
+    options.LogToStandardErrorThreshold = LogLevel.Trace);
 
 builder.Configuration
     .SetBasePath(AppContext.BaseDirectory)
