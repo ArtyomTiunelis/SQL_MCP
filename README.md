@@ -76,23 +76,6 @@ dotnet run -- --list-tools
 
 The server communicates over **stdio** (standard input/output). It cannot be tested by typing into a terminal directly — it requires an MCP client. For IDEs, the cleanest setup is to register the server in an `mcp.json` file.
 
-### Claude Desktop
-
-Add to `%APPDATA%\Claude\claude_desktop_config.json`:
-
-```json
-{
-  "mcpServers": {
-    "sql-mcp": {
-      "command": "dotnet",
-      "args": ["run", "--project", "C:\\path\\to\\SQL_MCP\\SQL_MCP.csproj"]
-    }
-  }
-}
-```
-
-Restart Claude Desktop. The tools will appear automatically in the tool panel.
-
 ### GitHub Copilot in Visual Studio 2022
 
 Visual Studio natively supports MCP servers through GitHub Copilot Agent mode. You simply need to create or edit an `.mcp.json` file in the appropriate location.
@@ -195,6 +178,23 @@ npx @modelcontextprotocol/inspector dotnet run --project C:\path\to\SQL_MCP\SQL_
 ```
 
 Opens a local browser UI where you can call each tool with form inputs.
+
+### Claude Desktop
+
+Add to `%APPDATA%\Claude\claude_desktop_config.json`:
+
+```json
+{
+  "mcpServers": {
+    "sql-mcp": {
+      "command": "dotnet",
+      "args": ["run", "--project", "C:\\path\\to\\SQL_MCP\\SQL_MCP.csproj"]
+    }
+  }
+}
+```
+
+Restart Claude Desktop. The tools will appear automatically in the tool panel.
 
 ---
 
