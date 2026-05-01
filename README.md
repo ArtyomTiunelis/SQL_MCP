@@ -6,7 +6,7 @@ A [Model Context Protocol (MCP)](https://modelcontextprotocol.io) server that gi
 
 ## Features
 
-- **26 tools** covering discovery, schema inspection, code search, safe data sampling, and SSIS package exploration
+- **26+ tools** covering discovery, schema inspection, code search, safe data sampling, and SSIS package exploration
 - **Multi-catalog support** — every tool accepts an optional `catalog` parameter to query any accessible database without reconfiguring
 - **Bounded responses** — list tools cap at a configurable row limit with total-count notices; definition tools truncate at a configurable character limit
 - **Keyword context extraction** — definition and trigger tools accept a `filter` parameter that returns only the ±N lines surrounding each match instead of the full body
@@ -120,7 +120,11 @@ Use the same server definition in either location:
     }
   }
 }
-``` 
+```
+
+After that, the copilot should see, enable and disable individual tools in the tool menu:
+<img width="557" height="945" alt="image" src="https://github.com/user-attachments/assets/92584f3d-878e-4e5a-aa59-63cd45f6c6b1" />
+
 
 ### GitHub Copilot in VS Code
 
